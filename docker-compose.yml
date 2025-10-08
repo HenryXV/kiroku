@@ -1,0 +1,17 @@
+# This file defines the services for your local development environment.
+services:
+  # This defines our PostgreSQL database service
+  postgres:
+    image: postgres:15-alpine # Use the official PostgreSQL 15 image
+    restart: always
+    env_file:
+      - .env
+    ports:
+      # This maps the port inside the container (5432) to a port on your local machine (5432)
+      - '5432:5432'
+    volumes:
+      # This ensures your data is saved even if you restart the container
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:

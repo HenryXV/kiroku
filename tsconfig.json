@@ -5,7 +5,7 @@
     "lib": ["ES2024"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "types": ["jest", "node"],
+    "types": ["node"],
 
     // Emit
     "outDir": "./dist",
@@ -34,7 +34,6 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-    "exactOptionalPropertyTypes": true,
 
     // Completeness
     "skipLibCheck": true,

@@ -1,12 +1,12 @@
 import express from "express";
-import jikanApiRoutes from "./api/routes/jikanApiRoutes.ts";
-import { errorHandler } from "./api/middlewares/errorHandler.ts";
+import { errorHandler } from "./api/middlewares/errorHandler.js";
+import routes from "./api/routes/index.js";
 
 const app = express();
 
 app.use(express.json());
 
-app.use("/api/v1", jikanApiRoutes);
+app.use("/api/v1", routes);
 
 app.use(errorHandler);
 
