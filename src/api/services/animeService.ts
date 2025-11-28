@@ -1,11 +1,6 @@
-import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../../generated/prisma/client.js";
 import Jikan, { Anime } from "jikan4.js";
+import prisma from "../../client.js";
 
-const connectionString = `${process.env.DATABASE_URL}`;
-
-const adapter = new PrismaPg({ connectionString }, { schema: "public" });
-const prisma = new PrismaClient({ adapter });
 const jikan = new Jikan.Client();
 
 const getAnimeById = async (id: number) => {

@@ -1,12 +1,6 @@
-import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../../generated/prisma/client.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-
-const connectionString = `${process.env.DATABASE_URL}`;
-
-const adapter = new PrismaPg({ connectionString }, { schema: "public" });
-const prisma = new PrismaClient({ adapter });
+import prisma from "../../client.js";
 
 const register = async (userData: {
   email: string;
