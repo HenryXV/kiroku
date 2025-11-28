@@ -10,7 +10,7 @@ const jikan = new Jikan.Client();
 
 const getAnimeById = async (id: number) => {
   const animeFromDb = await prisma.anime.findUnique({
-    where: { jikanId: id }, // Look up by the Jikan ID
+    where: { jikanId: id },
   });
 
   if (animeFromDb) {
@@ -26,25 +26,29 @@ const getAnimeById = async (id: number) => {
     return undefined;
   }
 
-  return createAnimeFromJikan(animeFromJikan);
+  return prisma.anime.create(createAnimeObject(animeFromJikan));
 };
 
 const searchAnimeByName = async (name: string) => {
   const searchString = name.toString();
   console.log(`Searching for anime with name: ${searchString}`);
-  const results = (await jikan.anime.search(searchString)).map((anime) => {
-    return {
-      title: anime.title.default,
-      year: anime.year,
-    };
-  });
+  const resultsUpsertPromises = (await jikan.anime.search(searchString)).map(
+    (anime) => {
+      const animeData = createAnimeObject(anime);
 
-  console.table(results);
-  return results;
+      return prisma.anime.upsert({
+        where: { jikanId: anime.id },
+        update: animeData.data,
+        create: animeData.data,
+      });
+    },
+  );
+
+  return await Promise.all(resultsUpsertPromises);
 };
 
-const createAnimeFromJikan = (anime: Anime) => {
-  return prisma.anime.create({
+const createAnimeObject = (anime: Anime) => {
+  return {
     data: {
       jikanId: anime.id,
       title: anime.title.toString(),
@@ -54,7 +58,7 @@ const createAnimeFromJikan = (anime: Anime) => {
       score: anime.score,
       status: anime.airInfo.status.toString(),
     },
-  });
+  };
 };
 
 export default { getAnimeById, searchAnimeByName };
