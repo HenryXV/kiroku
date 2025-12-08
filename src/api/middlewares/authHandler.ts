@@ -1,12 +1,18 @@
-// all requests should have the user payload
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { AppError } from "./errorHandler.js";
 
+interface UserPayload {
+  id: number;
+  email: string;
+  username: string;
+}
+
+// all requests should have the user payload
 declare global {
   namespace Express {
     interface Request {
-      user?: any;
+      user?: UserPayload;
     }
   }
 }
@@ -26,7 +32,7 @@ export const protect = (req: Request, res: Response, next: NextFunction) => {
       return next(new AppError("Not authorized, no token", 401));
     }
 
-    req.user = jwt.verify(token, process.env.JWT_SECRET!);
+    req.user = jwt.verify(token, process.env.JWT_SECRET!) as UserPayload;
 
     next();
   } catch (err) {
