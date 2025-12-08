@@ -78,3 +78,17 @@ export const searchAnimeByName = async (
     return next(err);
   }
 };
+
+export const getTopAnimes = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const results = await animeService.getTopAnimes();
+
+    return res.status(200).json({ success: true, data: results });
+  } catch (err) {
+    return next(err);
+  }
+};

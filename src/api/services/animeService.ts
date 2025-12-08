@@ -67,6 +67,22 @@ const searchAnimeByName = async (name: string) => {
   return await Promise.all(resultsUpsertPromises);
 };
 
+const getTopAnimes = async () => {
+  const resultsUpsertPromises = (
+    await jikan.top.listAnime({ filter: "airing" }, 0, 20)
+  ).map((anime) => {
+    const animeData = createAnimeObject(anime);
+
+    return prisma.anime.upsert({
+      where: { jikanId: anime.id },
+      update: animeData.data,
+      create: animeData.data,
+    });
+  });
+
+  return await Promise.all(resultsUpsertPromises);
+};
+
 const createAnimeObject = (anime: Anime) => {
   return {
     data: {
@@ -81,4 +97,9 @@ const createAnimeObject = (anime: Anime) => {
   };
 };
 
-export default { getAnimeById, getAnimeRecommendationsById, searchAnimeByName };
+export default {
+  getAnimeById,
+  getAnimeRecommendationsById,
+  searchAnimeByName,
+  getTopAnimes,
+};
