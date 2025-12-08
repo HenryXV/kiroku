@@ -31,6 +31,10 @@ export const createReview = async (
       reviewText,
     });
 
+    if (review === null) {
+      return next(new AppError("Could not create review.", 400));
+    }
+
     return res.status(201).json({ success: true, data: review });
   } catch (err) {
     if ((err as any).message === "You have already reviewed this anime.") {
@@ -49,6 +53,26 @@ export const getAnimeReviews = async (
     const id = parseInt(req.params.animeId as string, 10);
 
     const reviews = await reviewService.getReviewsById(id);
+
+    return res.status(200).json({ success: true, data: reviews });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+export const getAnimeReviewsByUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return next(new AppError("User not identified.", 404));
+    }
+
+    const reviews = await reviewService.getReviewsByUser(userId);
 
     return res.status(200).json({ success: true, data: reviews });
   } catch (err) {

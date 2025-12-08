@@ -45,7 +45,7 @@ const createReview = async ({
     });
   }
 
-  return;
+  return null;
 };
 
 const getReviewsById = async (jikanId: number) => {
@@ -64,7 +64,18 @@ const getReviewsById = async (jikanId: number) => {
   });
 };
 
+const getReviewsByUser = async (userId: number) => {
+  return prisma.review.findMany({
+    where: { userId: userId },
+    orderBy: { createdAt: "desc" },
+    include: {
+      user: { select: { username: true } },
+    },
+  });
+};
+
 export default {
   createReview,
   getReviewsById,
+  getReviewsByUser,
 };
