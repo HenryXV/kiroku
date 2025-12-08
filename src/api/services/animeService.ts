@@ -1,6 +1,15 @@
 import Jikan, { Anime } from "jikan4.js";
 import prisma from "../../client.js";
 
+interface JikanRecommendation {
+  entry: {
+    mal_id: number;
+    url: string;
+    images: { jpg: { image_url: string } };
+    title: string;
+  };
+}
+
 const jikan = new Jikan.Client();
 
 const getAnimeById = async (id: number) => {
@@ -22,6 +31,22 @@ const getAnimeById = async (id: number) => {
   }
 
   return prisma.anime.create(createAnimeObject(animeFromJikan));
+};
+
+const getAnimeRecommendationsById = async (id: number) => {
+  const response = await jikan.anime.getRecommendations(id);
+
+  if (response) {
+    const cleanedRecommendations = response.map((item) => ({
+      jikanId: item.entry.id,
+      title: item.entry.title,
+      imageUrl: item.entry.image?.jpg?.default,
+    }));
+
+    return cleanedRecommendations.slice(0, 10);
+  }
+
+  return [];
 };
 
 const searchAnimeByName = async (name: string) => {
@@ -56,4 +81,4 @@ const createAnimeObject = (anime: Anime) => {
   };
 };
 
-export default { getAnimeById, searchAnimeByName };
+export default { getAnimeById, getAnimeRecommendationsById, searchAnimeByName };

@@ -28,6 +28,34 @@ export const getAnimeById = async (
   }
 };
 
+export const getAnimeRecommendationsById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const id = parseInt(req.params.animeId as string, 10);
+
+    if (isNaN(id)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid anime ID provided" });
+    }
+
+    const animesData = await animeService.getAnimeRecommendationsById(id);
+
+    if (!animesData) {
+      return res
+        .status(404)
+        .json({ message: `No recommendations found for ID: ${id}.` });
+    }
+
+    return res.status(200).json({ success: true, data: animesData });
+  } catch (err) {
+    return next(err);
+  }
+};
+
 export const searchAnimeByName = async (
   req: Request,
   res: Response,
