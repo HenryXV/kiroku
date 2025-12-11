@@ -16,50 +16,49 @@ const createReview = async ({
 }: CreateReviewData) => {
   const anime = await animeService.getAnimeById(jikanId);
 
-  if (anime) {
-    const existingReview = await prisma.review.findFirst({
-      where: {
-        userId: userId,
-        animeId: anime.id,
-      },
-    });
-
-    if (existingReview) {
-      throw new Error("You have already reviewed this anime.");
-    }
-
-    return await prisma.review.create({
-      data: {
-        userId: userId,
-        animeId: anime.id,
-        rating: rating,
-        reviewText: reviewText,
-      },
-
-      include: {
-        anime: true,
-        user: {
-          select: { username: true },
-        },
-      },
-    });
+  if (!anime) {
+    throw new Error("Anime not found or could not be fetched.");
   }
 
-  return null;
+  const existingReview = await prisma.review.findFirst({
+    where: {
+      userId: userId,
+      animeId: anime.id,
+    },
+  });
+
+  if (existingReview) {
+    throw new Error("You have already reviewed this anime.");
+  }
+
+  return await prisma.review.create({
+    data: {
+      userId: userId,
+      animeId: anime.id,
+      rating: rating,
+      reviewText: reviewText,
+    },
+
+    include: {
+      anime: true,
+      user: {
+        select: { username: true },
+      },
+    },
+  });
 };
 
 const getReviewsById = async (jikanId: number) => {
-  const anime = await prisma.anime.findUnique({
-    where: { jikanId: jikanId },
-  });
-
-  if (!anime) return [];
-
   return prisma.review.findMany({
-    where: { animeId: anime.id },
+    where: { anime: { jikanId: jikanId } },
     orderBy: { createdAt: "desc" },
     include: {
       user: { select: { username: true } },
+      anime: {
+        select: {
+          jikanId: true,
+        },
+      },
     },
   });
 };
@@ -70,6 +69,7 @@ const getReviewsByUser = async (userId: number) => {
     orderBy: { createdAt: "desc" },
     include: {
       user: { select: { username: true } },
+      anime: { select: { jikanId: true } },
     },
   });
 };
