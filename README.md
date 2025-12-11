@@ -72,7 +72,6 @@ These instructions will get you a copy of the project up and running on your loc
 
 **Authentication:**
 This API uses **JWT (JSON Web Tokens)**.
-Routes under `/anime` are **protected** and require a valid token in the request header.
 
 * **Header Key:** `Authorization`
 * **Header Value:** `Bearer <your_token_here>`
@@ -160,7 +159,7 @@ Authenticate a user and receive a JWT token.
 
 -----
 
-## 🎬 Anime Routes
+## Anime Routes
 
 
 ### 1\. Search Anime
@@ -246,7 +245,7 @@ Get detailed information about a specific anime.
 ```
 -----
 
-## ✍️ Reviews Routes
+## Reviews Routes
 
 Base Endpoint: `/review`
 (Full URL: `http://localhost:3000/api/v1/review`)
