@@ -62,47 +62,318 @@ These instructions will get you a copy of the project up and running on your loc
     npm run build
     npm start
     ```
+    
+-----
 
-## API Routes
+##  Base Configuration
 
-### User Routes
+**Base URL:**
+`http://localhost:3000/api/v1`
 
--   `POST /api/users/register`
-    -   Register a new user.
-    -   Request body: `{ "username": "string", "email": "string", "password": "string" }`
+**Authentication:**
+This API uses **JWT (JSON Web Tokens)**.
+Routes under `/anime` are **protected** and require a valid token in the request header.
 
--   `POST /api/users/login`
-    -   Login with existing credentials.
-    -   Request body: `{ "email": "string", "password": "string" }`
-    -   Returns: JWT token
+* **Header Key:** `Authorization`
+* **Header Value:** `Bearer <your_token_here>`
 
--   `GET /api/users/profile`
-    -   Get the authenticated user's profile.
-    -   Requires: Bearer token in Authorization header
+-----
 
-### Anime Routes
+## User Routes (Public)
 
--   `GET /api/anime/search?q=:query`
-    -   Searches for anime by name using Jikan API.
-    -   Query parameters:
-        -   `q` (string, required): The name of the anime to search for.
+These routes are public and used to authenticate users.
 
--   `GET /api/anime/:animeId`
-    -   Retrieves an anime by its Jikan ID.
-    -   URL parameters:
-        -   `animeId` (integer, required): The Jikan ID of the anime.
+### 1\. Register User
 
--   `POST /api/anime/:animeId/review`
-    -   Create a review for an anime.
-    -   Requires: Bearer token in Authorization header
-    -   URL parameters:
-        -   `animeId` (integer, required): The Jikan ID of the anime.
-    -   Request body: `{ "rating": "number", "comment": "string" }`
+Create a new user account.
 
--   `GET /api/anime/:animeId/reviews`
-    -   Get all reviews for a specific anime.
-    -   URL parameters:
-        -   `animeId` (integer, required): The Jikan ID of the anime.
+* **Endpoint:** `/user/register`
+* **Method:** `POST`
+* **Access:**  Public
+
+#### Request Body
+
+| Field | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `email` | `string` | ✅ Yes | User's email address. |
+| `username` | `string` | ✅ Yes | Unique username. |
+| `password` | `string` | ✅ Yes | User's password. |
+
+#### Example Request
+
+```json
+{
+  "email": "henry@example.com",
+  "username": "henry_san",
+  "password": "securePassword123"
+}
+```
+
+#### Success Response (201 Created)
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "email": "henry@example.com",
+    "username": "henry_san",
+    "createdAt": "2023-10-27T10:00:00.000Z"
+  }
+}
+```
+
+-----
+
+### 2\. Login
+
+Authenticate a user and receive a JWT token.
+
+* **Endpoint:** `/user/login`
+* **Method:** `POST`
+* **Access:**  Public
+
+#### Request Body
+
+| Field | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `email` | `string` | ✅ Yes | Registered email. |
+| `password` | `string` | ✅ Yes | User's password. |
+
+#### Example Request
+
+```json
+{
+  "email": "henry@example.com",
+  "password": "securePassword123"
+}
+```
+
+#### Success Response (200 OK)
+
+```json
+{
+  "success": true,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+-----
+
+## 🎬 Anime Routes
+
+
+### 1\. Search Anime
+
+Search for anime by name using the Jikan API (cached locally).
+
+* **Endpoint:** `/anime/search`
+* **Method:** `GET`
+* **Access:** Public
+
+#### Query Parameters
+
+| Param | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `q` | `string` | ✅ Yes | The search term (min 3 characters). |
+
+#### Example Usage
+
+`GET http://localhost:3000/api/v1/anime/search?q=cowboy`
+
+#### Success Response (200 OK)
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "jikanId": 1,
+      "title": "Cowboy Bebop",
+      "imageUrl": "https://cdn.myanimelist.net/images/anime/4/19644.jpg",
+      "score": 8.75,
+      "status": "Finished Airing"
+    },
+    {
+      "jikanId": 5,
+      "title": "Cowboy Bebop: Tengoku no Tobira",
+      "imageUrl": "...",
+      "score": 8.38,
+      "status": "Finished Airing"
+    }
+  ]
+}
+```
+
+-----
+
+### 2\. Get Anime by ID
+
+Get detailed information about a specific anime.
+
+* **Endpoint:** `/anime/:animeId`
+* **Method:** `GET`
+* **Access:** Public
+
+#### URL Parameters
+
+| Param | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `animeId` | `number` | ✅ Yes | The **Jikan ID** (MAL ID) of the anime. |
+
+#### Example Usage
+
+`GET http://localhost:3000/api/v1/anime/1`
+
+#### Success Response (200 OK)
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 10,
+    "jikanId": 1,
+    "title": "Cowboy Bebop",
+    "synopsis": "In the year 2071, humanity has colonized several of the solar system's planets...",
+    "imageUrl": "https://cdn.myanimelist.net/images/anime/4/19644.jpg",
+    "episodes": 26,
+    "score": 8.75,
+    "status": "Finished Airing",
+    "createdAt": "2023-10-27T10:00:00.000Z",
+    "updatedAt": "2023-10-27T10:00:00.000Z"
+  }
+}
+```
+-----
+
+## ✍️ Reviews Routes
+
+Base Endpoint: `/review`
+(Full URL: `http://localhost:3000/api/v1/review`)
+
+### 1\. Create a Review
+
+Submit a new review for a specific anime.
+
+* **Endpoint:** `/`
+* **Method:** `POST`
+* **Access:** Protected (Requires Token)
+
+#### Request Body
+
+| Field | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `jikanId` | `number` | ✅ Yes | The MAL ID of the anime (from Jikan API). |
+| `rating` | `number` | ✅ Yes | Integer score from **1 to 10**. |
+| `reviewText` | `string` | ❌ No | The written content of the review. |
+
+#### Example Request
+
+```json
+{
+  "jikanId": 1,
+  "rating": 10,
+  "reviewText": "Absolute masterpiece."
+}
+```
+
+#### Success Response (201 Created)
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "rating": 10,
+    "reviewText": "Absolute masterpiece.",
+    "createdAt": "2023-10-27T10:00:00.000Z",
+    "user": { "username": "henry_san" },
+    "anime": { "title": "Cowboy Bebop", ... }
+  }
+}
+```
+
+-----
+
+### 2\. Get My Reviews
+
+Retrieve all reviews created by the currently logged-in user.
+
+* **Endpoint:** `/user`
+* **Method:** `GET`
+* **Access:** Protected (Requires Token)
+
+#### Example Request
+
+`GET http://localhost:3000/api/v1/review/user`
+
+#### Success Response (200 OK)
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "rating": 10,
+      "reviewText": "Absolute masterpiece.",
+      "anime": { "jikanId": 1, "title": "Cowboy Bebop" }
+    },
+    {
+      "id": 5,
+      "rating": 8,
+      "reviewText": "Good, but slow start.",
+      "anime": { "jikanId": 20, "title": "Naruto" }
+    }
+  ]
+}
+```
+
+-----
+
+### 3\. Get Reviews for an Anime
+
+Retrieve all reviews for a specific anime.
+
+* **Endpoint:** `/:animeId`
+* **Method:** `GET`
+* **Access:** Public
+
+#### URL Parameters
+
+* `:animeId` -\> The **Jikan ID** of the anime.
+
+#### Example Request
+
+`GET http://localhost:3000/api/v1/review/1`
+
+#### Success Response (200 OK)
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 15,
+      "rating": 9,
+      "reviewText": "Great show!",
+      "user": { "username": "henry_san" },
+      "createdAt": "2023-10-27T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+## Error Handling
+
+All errors return a standard JSON format:
+
+```json
+{
+  "success": false,
+  "message": "Error description here"
+}
+```
 
 ## Database Schema
 
